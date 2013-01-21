@@ -29,6 +29,6 @@ let ``Every clock tick world generates new generation`` () =
     let clock = scheduler.CreateHotObservable(onNext 500 1, onNext 1000 2)
     let world = World(Generation(), Rules(), clock)
     let gens = List<Generation>()
-    world.Subscribe(gens.Add) |> ignore
-    scheduler.AdvanceBy(int64 1001)
+    use sub = world.Subscribe(gens.Add)
+    scheduler.AdvanceBy(int64 1000)
     gens.Count |> should equal 2
