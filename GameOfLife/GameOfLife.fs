@@ -1,10 +1,10 @@
 ﻿module GameOfLife
 
 open System
-open System.Collections.Generic
 open System.Reactive
 open System.Reactive.Linq
-open System.Reactive.Subjects
+
+open System.Collections.Generic
 open FsUnit.Xunit
 open Microsoft.Reactive.Testing
 open NSubstitute
@@ -15,12 +15,10 @@ type Generation() = class end
 type Rules() = class end
 
 type World(generation: Generation, rules: Rules, clock: IObservable<int64>) =
-    let subject = new Subject<Generation>()
-    let computeNewGeneration = Generation()
-    do
-        clock.Subscribe (fun _ -> subject.OnNext(computeNewGeneration)) |> ignore
+    let computeNewGeneration() = Generation()
+
     interface IObservable<Generation> with
-        member x.Subscribe obs = subject.Subscribe obs
+        member x.Subscribe obs = clock.Select(fun _ -> computeNewGeneration()).Subscribe(obs)
 
 let onNext ticks value =
     Recorded<Notification<int64>>(int64 ticks, Notification.CreateOnNext(int64 value))
